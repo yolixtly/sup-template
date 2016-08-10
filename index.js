@@ -15,18 +15,22 @@ app.get('/users', function(req, res){
             return res.status(500).json({
                 message: 'Internal Server Error'
             });
-        }
+        };
         res.json(users);
     });
 });
 
 //
 app.get('/users/:userId', function(req, res){
-    User.findById(function(err, users){
+    User.findById(req.params.userId,function(err, users){
         if (err) {
             return res.status(404).json({
                 message: 'User not found'
             });
+        }
+    User.find(req.params.userId)
+        if (users._id == req.params.userId) {
+            return res.status(404).json({message: 'User not found'})
         }
         res.json(users);
     });
@@ -35,27 +39,51 @@ app.get('/users/:userId', function(req, res){
 app.post('/users', jsonParser, function(req, res){
     User.create({
        username: req.body.username
-    }, function(err, users) {
+    }, function(err, user) {
         if(!req.body.username){
             return res.status(422).json({
                 message: 'Missing field: username'
             });
 
         }
-        if(typeof(req.body.username) != String){
+        if(typeof req.body.username != String){
             return res.status(422).json({
                 message: 'Incorrect field type: username'
             });
-
         }
         if (err) {
             return res.status(500).json({
                 message: 'Internal Server Error'
             });
         }
-         // console.log('req.header: ', req.headers);
-        // res.location("Location", res.users._id);
-        res.status(201).json(users);
+        res.location('/users/'+user._id);
+        res.status(201).json({});
+    });
+});
+
+app.put('/users/:userId', jsonParser, function(req,res){
+    // if (req.params._id) {
+    //     User.create({
+    //         username: req.body.username
+    //     }, function(err,users) {
+    //         if(!req.body.username){
+    //             return res.status(422).json({
+    //                 message: 'Missing field: username'
+    //             })
+    //         }
+    //     });
+    // res.status(200).json(users);
+    // }
+
+    User.findByIdAndUpdate(req.params.userId, {
+        username: req.body.username
+    }, function(err, users){
+        if (err) {
+            return res.status(400).json({ message: 'error'})
+        }
+
+        //console.log(res.body);
+        res.status(200).json(users);
     });
 });
 
