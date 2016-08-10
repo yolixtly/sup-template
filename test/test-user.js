@@ -14,7 +14,7 @@ var should = chai.should();
 
 chai.use(chaiHttp);
 
-describe('User endpoints', function() {
+describe.only('User endpoints', function() {
     beforeEach(function(done) {
         // Clear the database
         mongoose.connection.db.dropDatabase(done);
@@ -80,7 +80,7 @@ describe('User endpoints', function() {
                     .send(user)
                     .then(function(res) {
                         // Check that an empty object is returned
-                        console.log(res.body);
+                        // console.log(req.body);
                         res.should.have.status(201);
                         res.type.should.equal('application/json');
                         res.charset.should.equal('utf-8');
@@ -125,7 +125,9 @@ describe('User endpoints', function() {
                         spy.called.should.be.false;
                     });
             });
-            it('should reject non-string usernames', function() {
+
+// ??????????
+            it('SPY should reject non-string usernames', function() {
                 var user = {
                     username: 42
                 };
@@ -156,7 +158,8 @@ describe('User endpoints', function() {
 
     describe('/users/:userId', function() {
         describe('GET', function() {
-            it.only('should 404 on non-existent users', function() {
+    //?????????
+            it('SPY should 404 on non-existent users', function() {
                 var spy = makeSpy();
                 // Request a non-existent user
                 return chai.request(app)
@@ -175,7 +178,7 @@ describe('User endpoints', function() {
                     })
                     .then(function() {
                         // Check that the request didn't succeed
-                        spy.called.should.be.false;
+                        spy.called.should.be.false; // dont understand
                     });
             });
 
@@ -205,7 +208,7 @@ describe('User endpoints', function() {
                         res.body.username.should.equal(user.username);
                         res.body.should.have.property('_id');
                         res.body._id.should.be.a('string');
-                        res.body._id.should.equal(userId)
+                        res.body._id.should.equal(userId);
                     });
             });
         });
