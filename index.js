@@ -6,7 +6,58 @@ var app = express();
 
 var jsonParser = bodyParser.json();
 
+var User = require('./models/user.js');
 // Add your API endpoints here
+
+app.get('/users', function(req, res){
+    User.find(function(err, users){
+        if (err) {
+            return res.status(500).json({
+                message: 'Internal Server Error'
+            });
+        }
+        res.json(users);
+    });
+});
+
+//
+app.get('/users/:userId', function(req, res){
+    User.findById(function(err, users){
+        if (err) {
+            return res.status(404).json({
+                message: 'User not found'
+            });
+        }
+        res.json(users);
+    });
+});
+
+app.post('/users', jsonParser, function(req, res){
+    User.create({
+       username: req.body.username
+    }, function(err, users) {
+        if(!req.body.username){
+            return res.status(422).json({
+                message: 'Missing field: username'
+            });
+
+        }
+        if(typeof(req.body.username) != String){
+            return res.status(422).json({
+                message: 'Incorrect field type: username'
+            });
+
+        }
+        if (err) {
+            return res.status(500).json({
+                message: 'Internal Server Error'
+            });
+        }
+         // console.log('req.header: ', req.headers);
+        // res.location("Location", res.users._id);
+        res.status(201).json(users);
+    });
+});
 
 var runServer = function(callback) {
     var databaseUri = process.env.DATABASE_URI || global.databaseUri || 'mongodb://localhost/sup';
@@ -27,4 +78,6 @@ if (require.main === module) {
 
 exports.app = app;
 exports.runServer = runServer;
+
+
 
