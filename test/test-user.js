@@ -14,7 +14,7 @@ var should = chai.should();
 
 chai.use(chaiHttp);
 
-describe.only('User endpoints', function() {
+describe('User endpoints', function() {
     beforeEach(function(done) {
         // Clear the database
         mongoose.connection.db.dropDatabase(done);
@@ -127,8 +127,6 @@ describe.only('User endpoints', function() {
                         spy.called.should.be.false;
                     });
             });
-
-// ??????????
             it('SPY should reject non-string usernames', function() {
                 var user = {
                     username: 42
@@ -160,7 +158,6 @@ describe.only('User endpoints', function() {
 
     describe('/users/:userId', function() {
         describe('GET', function() {
-    //?????????
             it('SPY should 404 on non-existent users', function() {
                 var spy = makeSpy();
                 // Request a non-existent user
@@ -254,7 +251,8 @@ describe.only('User endpoints', function() {
                         res.username.should.equal(newUser.username);
                     });
             });
-            it.only('should create a user if they don\'t exist', function() {
+            //
+             it('should create a user if they don\'t exist', function() {
                 var user = {
                     _id: '000000000000000000000000',
                     username: 'joe'
@@ -270,21 +268,18 @@ describe.only('User endpoints', function() {
                         res.should.have.status(200);
                         res.type.should.equal('application/json');
                         res.charset.should.equal('utf-8');
-                        // console.log('res-body', res.body);
                         res.body.should.be.an('object');
                         res.body.should.be.empty;
 
-                        
-                        // console.log('response : ', res);
-                        // Check that the user has been added
-                        should.exist(res);
-//????is not finding the username inside the body in res.body
-                        // res.should.have.property('username');
-                        res.username.should.be.a('string');
-                        res.username.should.equal(user.username);
-
                         // Fetch the user from the database
                         return User.findById(user._id).exec();
+                    })
+                    .then(function(res) {
+                        // Check that the user has been added
+                        should.exist(res);
+                        res.should.have.property('username');
+                        res.username.should.be.a('string');
+                        res.username.should.equal(user.username);
                     });
             });
             it('should reject users without a username', function() {

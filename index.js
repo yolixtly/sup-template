@@ -78,31 +78,24 @@ app.put('/users/:userId', jsonParser, function(req, res) {
                 message: 'Incorrect field type: username'
             });
         }
-
-    User.find(req.params.userId, function(err, user) {
+        //first arg --> obj
+    User.find({
+        _id : req.params.userId
+    }, function(err, users) {
         if (err) {
             return res.status(422).json({
                 message: 'Missing field: username'
             });
         }
-        if (!req.params.userId) {
+        if (users.length === 0) {
             User.create({
+                _id : req.params.userId,
                 username: req.body.username
-            }, function(err, users) {
-                if (!req.body.username) {
-                    return res.status(422).json({
-                        message: 'Missing field: username'
-                    });
-                }
+            }, function(err, user) {
+               return res.json({});
             });
-            console.log('user:', User);
-            res.status(200).json(users);
-        }
-
-    });
-
-
-    User.findByIdAndUpdate(req.params.userId, {
+        } else {
+             User.findByIdAndUpdate(req.params.userId, {
         username: req.body.username
     }, function(err, users) {
         if (err) {
@@ -113,6 +106,9 @@ app.put('/users/:userId', jsonParser, function(req, res) {
 
         // console.log(res.body);
         res.status(200).json({});
+    });
+        }
+
     });
 });
 
