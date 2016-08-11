@@ -574,10 +574,14 @@ describe('Message endpoints', function() {
                         spy.called.should.be.false;
                     });
             });
-            it.only('should return a single message', function() {
+            it('should return a single message', function() {
                 var message = {
-                    from: this.alice._id,
-                    to: this.bob._id,
+                    from: {
+                        username: this.alice.username
+                    },
+                    to: {
+                        username: this.bob.username
+                    },
                     text: 'Hi Bob'
                 };
                 var messageId;
@@ -596,7 +600,6 @@ describe('Message endpoints', function() {
                         res.should.have.status(200);
                         res.type.should.equal('application/json');
                         res.charset.should.equal('utf-8');
-                        res.body.should.be.an('object');
                         res.body.should.be.an('object');
                         res.body.should.have.property('text');
                         res.body.text.should.be.a('string');

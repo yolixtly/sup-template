@@ -197,25 +197,11 @@ app.get('/messages/:messageId', function(req, res) {
     Message.find({_id: req.params.messageId})
     .populate('_id')
     .exec(function(err, messages){
-        console.log(req.params.messageId);
-        console.log(messages);
-                if (err) {
-                    console.log('this is in err');
-                    return res.status(500).json({
-                        message: 'Internal Server Error'
-                    });
-                }
-                if (messages.length === 0) {
-                     console.log('this is in err2');
-                    return res.status(404).json({
-                        message: 'Message not found'
-                    });
-                }
-                if (messages[0]._id == req.params.messageId){
-                     console.log('this is in err3');
-                    res.status(200).json(messages);
-                }
+        messages.forEach(function(message) {
+        res.status(200).json(message);
+        console.log(message);
     });
+});
 
     // if (req.body._id) {
     //     Message.findById({

@@ -2,13 +2,13 @@ var mongoose = require('mongoose');
 
 var MessageSchema = new mongoose.Schema({
     from: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Object,
         // mongoose specific : refers to something within the user collection
         ref: 'User',
         required: true
     },
     to: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Object,
         ref: 'User',
         required: true
     },
