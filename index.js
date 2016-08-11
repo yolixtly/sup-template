@@ -125,7 +125,7 @@ app.delete('/users/:userId', jsonParser, function(req, res) {
 });
 
 
-// MESSAGES 
+// MESSAGES
 
 app.get('/messages', function(req, res) {
     if (req.query.from && !req.query.to) {
@@ -194,8 +194,11 @@ app.get('/messages', function(req, res) {
 });
 
 app.get('/messages/:messageId', function(req, res) {
-    Message.find({_id: req.params.messageId}, function(err, messages){
-        
+    Message.find({_id: req.params.messageId})
+    .populate('_id')
+    .exec(function(err, messages){
+        console.log(req.params.messageId);
+        console.log(messages);
                 if (err) {
                     console.log('this is in err');
                     return res.status(500).json({
@@ -208,10 +211,10 @@ app.get('/messages/:messageId', function(req, res) {
                         message: 'Message not found'
                     });
                 }
-                // if (messages._id == req.params.messageId){
+                if (messages[0]._id == req.params.messageId){
                      console.log('this is in err3');
                     res.status(200).json(messages);
-                // }
+                }
     });
 
     // if (req.body._id) {
@@ -281,8 +284,35 @@ app.get('/messages/:messageId', function(req, res) {
 });
 
 app.post('/messages', jsonParser, function(req, res) {
+ User.find(req.body.from, function(err, users) {
+    if (users.length == 0) {
+        res.status(422).json({message: 'Incorrect field value: from'})
+    }
+ })
 
-      if (Object.prototype.toString.call(req.body.text) != '[object String]') {
+// console.log(req.body);
+        // Message.find({
+        //     from: req.body.from,
+        //     to: req.body.to
+        // }, function(req, messages) {
+        //         if (messages.length == 0) {
+        //             return res.status(422).json({
+        //                 message: 'Incorrect field value: from'
+        //             });
+        //     }
+        //     else {
+
+        //     }
+        // });
+
+
+ //2should reject messages without text
+      if (!req.body.text) {
+        return res.status(422).json({message: 'Missing field: text'})
+
+      }
+
+       if (Object.prototype.toString.call(req.body.text) != '[object String]') {
             return res.status(422).json({
                 message: 'Incorrect field type: text'
             });
@@ -297,17 +327,7 @@ app.post('/messages', jsonParser, function(req, res) {
                 message: 'Incorrect field type: from'
             });
         }
-        Message.find({
-            from :req.query.from,
-            to: req.body.to
-        }, function(req, messages) {
-                if (messages.length == 0) {
-                    return res.status(422).json({
-                        message: 'Incorrect field value: from'
-                    });
-            }
-        });
-
+ //1should allow adding a message
         Message.create({
                 to: req.body.to,
                 from: req.body.from,
@@ -321,9 +341,23 @@ app.post('/messages', jsonParser, function(req, res) {
                         message: 'Missing field: text'
                     });
                 }
-            });  
+            });
 
 });
+        // console.log(req.body);
+        // Message.find({
+        //     from: req.body.from,
+        //     to: req.body.to
+        // }, function(req, messages) {
+        //         if (messages.length == 0) {
+        //             return res.status(422).json({
+        //                 message: 'Incorrect field value: from'
+        //             });
+        //     }
+        //     else {
+
+        //     }
+        // });
 
     var runServer = function(callback) {
         var databaseUri = process.env.DATABASE_URI || global.databaseUri || 'mongodb://localhost/sup';
