@@ -14,7 +14,7 @@ var should = chai.should();
 
 chai.use(chaiHttp);
 
-describe('User endpoints', function() {
+describe.only('User endpoints', function() {
     beforeEach(function(done) {
         // Clear the database
         mongoose.connection.db.dropDatabase(done);
@@ -374,6 +374,9 @@ describe('User endpoints', function() {
                     .then(function(res) {
                         userId = res._id.toString();
                         // Request to delete the user
+                        console.log(this.singlePattern.stringify({
+                                userId: userId
+                            }));
                         return chai.request(app)
                             .delete(this.singlePattern.stringify({
                                 userId: userId

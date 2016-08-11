@@ -28,28 +28,24 @@ app.get('/users/:userId', function(req, res) {
             return res.status(404).json({
                 message: 'User not found'
             });
-        }
-        // User.find(req.params.userId)
-        //     if (users._id == req.params.userId) {
-        //         return res.status(404).json({message: 'User not found'})
-        //     }
+}
         res.json(users);
     });
 });
 
 app.post('/users', jsonParser, function(req, res) {
-        if (!req.body.username) {
-            return res.status(422).json({
-                message: 'Missing field: username'
-            });
+    if (!req.body.username) {
+        return res.status(422).json({
+            message: 'Missing field: username'
+        });
 
-        }
-        // THIS : would not let the 'should allow adding a user' pass
-        if(Object.prototype.toString.call(req.body.username) != '[object String]'){
-            return res.status(422).json({
-                message: 'Incorrect field type: username'
-            });
-        }
+    }
+    // THIS : would not let the 'should allow adding a user' pass
+    if (Object.prototype.toString.call(req.body.username) != '[object String]') {
+        return res.status(422).json({
+            message: 'Incorrect field type: username'
+        });
+    }
 
     User.create({
         username: req.body.username
@@ -67,20 +63,20 @@ app.post('/users', jsonParser, function(req, res) {
 });
 
 app.put('/users/:userId', jsonParser, function(req, res) {
-   if (!req.body.username){
+    if (!req.body.username) {
         return res.status(422).json({
-                message: 'Missing field: username'
-            });
-   }
+            message: 'Missing field: username'
+        });
+    }
 
-   if(Object.prototype.toString.call(req.body.username) != '[object String]'){
-            return res.status(422).json({
-                message: 'Incorrect field type: username'
-            });
-        }
-        //first arg --> obj
+    if (Object.prototype.toString.call(req.body.username) != '[object String]') {
+        return res.status(422).json({
+            message: 'Incorrect field type: username'
+        });
+    }
+    //first arg --> obj
     User.find({
-        _id : req.params.userId
+        _id: req.params.userId
     }, function(err, users) {
         if (err) {
             return res.status(422).json({
@@ -89,28 +85,44 @@ app.put('/users/:userId', jsonParser, function(req, res) {
         }
         if (users.length === 0) {
             User.create({
-                _id : req.params.userId,
+                _id: req.params.userId,
                 username: req.body.username
             }, function(err, user) {
-               return res.json({});
+                return res.json({});
             });
         } else {
-             User.findByIdAndUpdate(req.params.userId, {
-        username: req.body.username
-    }, function(err, users) {
-        if (err) {
-            return res.status(400).json({
-                message: 'error'
+            User.findByIdAndUpdate(req.params.userId, {
+                username: req.body.username
+            }, function(err, users) {
+                if (err) {
+                    return res.status(400).json({
+                        message: 'error'
+                    });
+}
+                res.status(200).json({});
             });
-        }
-
-        // console.log(res.body);
-        res.status(200).json({});
-    });
         }
 
     });
 });
+app.delete('/users/:userId', jsonParser, function(req, res) {
+    User.findOneAndRemove({
+        _id: req.params.userId
+    }, function(err, users) {
+        if (!users){
+            return res.status(404).json({
+                message: 'User not found'
+            })
+        }
+        if (err) {
+            return res.status(404).json({
+                message: 'Missing field: User not found'
+            });
+        }
+        return res.status(200).json({})
+    });
+});
+
 
 var runServer = function(callback) {
     var databaseUri = process.env.DATABASE_URI || global.databaseUri || 'mongodb://localhost/sup';
