@@ -7,6 +7,8 @@ var app = express();
 var jsonParser = bodyParser.json();
 
 var User = require('./models/user.js');
+
+var Message = require('./models/message.js');
 // Add your API endpoints here
 
 app.get('/users', function(req, res) {
@@ -20,7 +22,6 @@ app.get('/users', function(req, res) {
     });
 });
 
-//
 app.get('/users/:userId', function(req, res) {
     User.findById(req.params.userId, function(err, users) {
         console.log(users);
@@ -28,7 +29,7 @@ app.get('/users/:userId', function(req, res) {
             return res.status(404).json({
                 message: 'User not found'
             });
-}
+        }
         res.json(users);
     });
 });
@@ -98,7 +99,7 @@ app.put('/users/:userId', jsonParser, function(req, res) {
                     return res.status(400).json({
                         message: 'error'
                     });
-}
+                }
                 res.status(200).json({});
             });
         }
@@ -109,7 +110,7 @@ app.delete('/users/:userId', jsonParser, function(req, res) {
     User.findOneAndRemove({
         _id: req.params.userId
     }, function(err, users) {
-        if (!users){
+        if (!users) {
             return res.status(404).json({
                 message: 'User not found'
             })
@@ -124,22 +125,221 @@ app.delete('/users/:userId', jsonParser, function(req, res) {
 });
 
 
-var runServer = function(callback) {
-    var databaseUri = process.env.DATABASE_URI || global.databaseUri || 'mongodb://localhost/sup';
-    mongoose.connect(databaseUri).then(function() {
-        var port = process.env.PORT || 8080;
-        var server = app.listen(port, function() {
-            console.log('Listening on localhost:' + port);
-            if (callback) {
-                callback(server);
+// MESSAGES 
+
+app.get('/messages', function(req, res) {
+    if (req.query.from && !req.query.to) {
+        Message.find({
+            from: req.query.from
+        })
+            .populate('from')
+            .populate('to')
+            .exec(function(err, messages) {
+                if (err) {
+                    return res.status(500).json({
+                        message: 'Internal Server Error'
+                    });
+                }
+                res.status(200).json(messages);
+            });
+    }
+
+    if (req.query.to && !req.query.from) {
+        Message.find({
+            to: req.query.to
+        })
+            .populate('from')
+            .populate('to')
+            .exec(function(err, messages) {
+                if (err) {
+                    return res.status(500).json({
+                        message: 'Internal Server Error'
+                    });
+                }
+                res.status(200).json(messages);
+            });
+    }
+
+    if (req.query.to && req.query.from) {
+        Message.find({
+            to: req.query.to,
+            from: req.query.from
+        })
+            .populate('from')
+            .populate('to')
+            .exec(function(err, messages) {
+                if (err) {
+                    return res.status(500).json({
+                        message: 'Internal Server Error'
+                    });
+                }
+                res.status(200).json(messages);
+            });
+    }
+
+    Message.find()
+        .populate('from')
+        .populate('to')
+        .exec(function(err, messages) {
+            if (err) {
+                return res.status(500).json({
+                    message: 'Internal Server Error'
+                });
+            }
+
+            console.log('res.body: ', req.query);
+            res.status(200).json(messages);
+        });
+
+});
+
+app.get('/messages/:messageId', function(req, res) {
+    Message.find({_id: req.params.messageId}, function(err, messages){
+        
+                if (err) {
+                    console.log('this is in err');
+                    return res.status(500).json({
+                        message: 'Internal Server Error'
+                    });
+                }
+                if (messages.length === 0) {
+                     console.log('this is in err2');
+                    return res.status(404).json({
+                        message: 'Message not found'
+                    });
+                }
+                // if (messages._id == req.params.messageId){
+                     console.log('this is in err3');
+                    res.status(200).json(messages);
+                // }
+    });
+
+    // if (req.body._id) {
+    //     Message.findById({
+    //         messageId: req.body._id
+    //     })
+    //         .populate('text')
+    //         .populate('from')
+    //         .populate('to')
+    //         .exec(function(err, messages) {
+    //             if (err) {
+    //                 return res.status(500).json({
+    //                     message: 'Internal Server Error'
+    //                 });
+    //             }
+    //             res.status(200).json(messages);
+    //         });
+    // }
+
+    // if (req.query.to && !req.query.from) {
+    //     Message.find({
+    //         to: req.query.to
+    //     })
+    //         .populate('from')
+    //         .populate('to')
+    //         .exec(function(err, messages) {
+    //             if (err) {
+    //                 return res.status(500).json({
+    //                     message: 'Internal Server Error'
+    //                 });
+    //             }
+    //             res.status(200).json(messages);
+    //         });
+    // }
+
+    // if (req.query.to && req.query.from) {
+    //     Message.find({
+    //         to: req.query.to,
+    //         from: req.query.from
+    //     })
+    //         .populate('from')
+    //         .populate('to')
+    //         .exec(function(err, messages) {
+    //             if (err) {
+    //                 return res.status(500).json({
+    //                     message: 'Internal Server Error'
+    //                 });
+    //             }
+    //             res.status(200).json(messages);
+    //         });
+    // }
+
+    // Message.find()
+    //     .populate('from')
+    //     .populate('to')
+    //     .exec(function(err, messages) {
+    //         if (err) {
+    //             return res.status(500).json({
+    //                 message: 'Internal Server Error'
+    //             });
+    //         }
+
+    //         console.log('res.body: ', req.query);
+    //         res.status(200).json(messages);
+    //     });
+
+});
+
+app.post('/messages', jsonParser, function(req, res) {
+
+      if (Object.prototype.toString.call(req.body.text) != '[object String]') {
+            return res.status(422).json({
+                message: 'Incorrect field type: text'
+            });
+        }
+        if (Object.prototype.toString.call(req.body.to) != '[object String]') {
+            return res.status(422).json({
+                message: 'Incorrect field type: to'
+            });
+        }
+        if (Object.prototype.toString.call(req.body.from) != '[object String]') {
+            return res.status(422).json({
+                message: 'Incorrect field type: from'
+            });
+        }
+        Message.find({
+            from :req.query.from,
+            to: req.body.to
+        }, function(req, messages) {
+                if (messages.length == 0) {
+                    return res.status(422).json({
+                        message: 'Incorrect field value: from'
+                    });
             }
         });
-    });
-};
 
-if (require.main === module) {
-    runServer();
-};
+        Message.create({
+                to: req.body.to,
+                from: req.body.from,
+                text: req.body.text
+            }).then(function(message) {
+                res.location('/messages/' + message._id);
+                res.status(201).json({});
+            }).catch(function(err) {
+                if (err) {
+                    return res.status(422).json({
+                        message: 'Missing field: text'
+                    });
+                }
+            });  
 
-exports.app = app;
-exports.runServer = runServer;
+});
+
+    var runServer = function(callback) {
+        var databaseUri = process.env.DATABASE_URI || global.databaseUri || 'mongodb://localhost/sup';
+        mongoose.connect(databaseUri).then(function() {
+            var port = process.env.PORT || 8080;
+            var server = app.listen(port, function() {
+                console.log('Listening on localhost:' + port);
+                if (callback) {
+                    callback(server);
+                }
+            });
+        });
+    };
+
+    if (require.main === module) {
+        runServer();
+    }
+
+    exports.app = app; exports.runServer = runServer;
