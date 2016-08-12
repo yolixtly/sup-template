@@ -9,6 +9,7 @@ var jsonParser = bodyParser.json();
 var User = require('./models/user.js');
 
 var Message = require('./models/message.js');
+
 // Add your API endpoints here
 
 app.get('/users', function(req, res) {
@@ -197,9 +198,15 @@ app.get('/messages/:messageId', function(req, res) {
     Message.find({_id: req.params.messageId})
     .populate('_id')
     .exec(function(err, messages){
+        if(messages.length == 0){
+            return  res.status(404).json({
+                message : 'Message not found'
+            });
+        }
+
         messages.forEach(function(message) {
         res.status(200).json(message);
-        console.log(message);
+
     });
 });
 
@@ -271,10 +278,15 @@ app.get('/messages/:messageId', function(req, res) {
 
 app.post('/messages', jsonParser, function(req, res) {
  User.find(req.body.from, function(err, users) {
+    console.log('req.body.from', req.body.from);
+    console.log('users :', users);
     if (users.length == 0) {
-        res.status(422).json({message: 'Incorrect field value: from'})
+        res.status(422).json({message: 'Incorrect field value: from'});
+    } else {
+        res.status(200).json(console.log(users));
     }
- })
+
+ });
 
 // console.log(req.body);
         // Message.find({
